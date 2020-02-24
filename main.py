@@ -55,7 +55,7 @@ datatrain, labeltrain, datatest, labeltest = train_and_test_set(images, labels, 
 
 
 class ResBlock(nn.Module):
-	def __init__(self, in_, mid_, out_, k, DO = 0.0, ds = False):
+	def __init__(self, in_, mid_, out_, k, DO = 0.0, ds = 0):
 		super().__init__()
 
 		self.DO = DO
@@ -90,16 +90,16 @@ class ResBlock(nn.Module):
 		)
 
 		self.ds = ds
-		if self.ds:
+		if self.ds > 0:
 			self.DS = nn.Sequential(
-			nn.Conv2d(out_,out_,3, 3), nn.LeakyReLU(inplace=True),
+			nn.Conv2d(out_,out_,self.ds, self.ds), nn.LeakyReLU(inplace=True),
 			nn.BatchNorm2d(out_))
 
 	def forward(self, input):
 		out = self.conv(input)
 		out += input
 
-		if self.ds:
+		if self.ds > 0:
 			out = self.DS(out)
 
 		return out
@@ -115,11 +115,17 @@ class Net(nn.Module):
 		self.out_ = self.in_
 		self.featureExtractor = nn.Sequential(
 			nn.Conv2d(size, self.in_,1),
-			ResBlock(self.in_, self.mid_, self.out_, 4), #4 refers to kernel size, convolution size of 4x4 
+			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2), #4 refers to kernel size, convolution size of 4x4 
 			ResBlock(self.in_, self.mid_, self.out_, 4),
-			ResBlock(self.in_, self.mid_, self.out_, 4, ds = True),
-			ResBlock(self.in_, self.mid_, self.out_, 4, ds = True),
-			ResBlock(self.in_, self.mid_, self.out_, 4, ds = True))
+			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
+			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
+			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
+			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
+			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2))
 
 		self.dense = nn.Sequential(
 			nn.Linear(2048, 256),
@@ -127,8 +133,14 @@ class Net(nn.Module):
 			nn.BatchNorm1d(256),			
 			nn.Linear(256, 128),
 			nn.ReLU(inplace = True),
-			nn.BatchNorm1d(128),		
-			nn.Linear(128, 3))
+			nn.BatchNorm1d(128),
+			nn.Linear(128, 64),
+			nn.ReLU(inplace = True),
+			nn.BatchNorm1d(64),
+			nn.Linear(64, 32),
+			nn.ReLU(inplace = True),
+			nn.BatchNorm1d(32),		
+			nn.Linear(32, 3))
 
 
 
@@ -136,7 +148,7 @@ class Net(nn.Module):
 
 	def forward(self, x):
 		x = self.featureExtractor(x)
-		pdb.set_trace()
+		#pdb.set_trace()
 		#x = self.AA(x)
 		x = torch.flatten(x, 1)
 		x = self.dense(x)
