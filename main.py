@@ -117,13 +117,18 @@ class Net(nn.Module):
 			nn.Conv2d(size, self.in_,1),
 			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2), #4 refers to kernel size, convolution size of 4x4 
 			ResBlock(self.in_, self.mid_, self.out_, 4),
-			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
-			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
+			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
+			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2))
 
