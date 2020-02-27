@@ -6,14 +6,14 @@ import matplotlib.pyplot as plt
 from torchvision import datasets, transforms
 import pdb
 
-epochs = 100
+epochs = 500
 K = 5
 
 #loading the data in, batch size = minibatch size
 #important to have the data in its own folder with labels in diff folders as is done here
 train_loader = torch.utils.data.DataLoader(
 datasets.ImageFolder("data",
-transform = transforms.Compose([transforms.Resize((256, 256)),transforms.ToTensor()]) #reshape to 512x512 b/c they were unequal and they're all around 512
+transform = transforms.Compose([transforms.Resize((256,256)),transforms.CenterCrop(224), transforms.ToTensor(), transforms.Normalize(mean=[0.485,0.456,0.406],std=[0.229,0.224,0.225])]) #reshape to 512x512 b/c they were unequal and they're all around 512
 ),
 batch_size = 100, shuffle = True 
 )
@@ -114,16 +114,29 @@ class Net(nn.Module):
 		self.mid_ = 64
 		self.out_ = self.in_
 		self.featureExtractor = nn.Sequential(
-			nn.Conv2d(size, self.in_,1),
-			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2), #4 refers to kernel size, convolution size of 4x4 
+			nn.Conv2d(size, 32,1),
+			ResBlock(32, 16, 32, 4, ds = 2), #4 refers to kernel size, convolution size of 4x4 
+			nn.Conv2d(32, 64, 1),
+			ResBlock(64, 32, 64, 4),
+			ResBlock(64, 32, 64, 4),			
+			ResBlock(64, 32, 64, 4, ds = 2),
+			ResBlock(64, 32, 64, 4),
+			ResBlock(64, 32, 64, 4),
+			ResBlock(64, 32, 64, 4),
+			nn.Conv2d(64,128,1),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
-			ResBlock(self.in_, self.mid_, self.out_, 4),			
+			ResBlock(self.in_, self.mid_, self.out_, 4),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
+			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
-			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
@@ -131,7 +144,8 @@ class Net(nn.Module):
 			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
-			ResBlock(self.in_, self.mid_, self.out_, 4, ds = 2),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
+			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
 			ResBlock(self.in_, self.mid_, self.out_, 4),
@@ -166,9 +180,11 @@ class Net(nn.Module):
 		return x
 
 #have to 
-model = Net(3).to(device)
+#model = Net(3).to(device)
 
-optim = torch.optim.Adam(model.parameters(), lr = 3e-4)
+model = torch.hub.load('pytorch/vision:v0.5.0', 'resnext50_32x4d', pretrained=True)
+
+optim = torch.optim.Adam(model.parameters(), lr = 3e-4, weight_decay = 1e-5)
 
 Loss = nn.CrossEntropyLoss()
 
