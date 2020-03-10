@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import label_binarize
 from torchvision import datasets, transforms
 import pdb
 from sklearn.metrics import roc_curve, auc
@@ -183,9 +184,11 @@ class Net(nn.Module):
 #have to 
 #model = Net(3).to(device)
 
-model = torch.hub.load('pytorch/vision:v0.5.0', 'resnext50_32x4d', pretrained=True).to(device)
-
-optim = torch.optim.Adam(model.parameters(), lr = 3e-4, weight_decay = 1e-5)
+model = torch.hub.load('pytorch/vision:v0.5.0', 'resnext101_32x8d', pretrained=True).to(device)
+model.fc = nn.Linear(2048, 3)
+model.avgpool = nn.AdaptiveMaxPool2d((1,1))
+model = model.to(device)
+optim = torch.optim.Adam(model.parameters(), lr = 3e-4, weight_decay = 1e-4)
 
 Loss = nn.CrossEntropyLoss()
 
@@ -199,6 +202,8 @@ auc1s = []
 auc2s = []
 auc3s = []
 model.best_testacc = 0
+model.best_testauc = 0
+model.accforbestauc = 0
 #for epoch in range(1, epochs+1):
 #	acc_sum = 0
 #	losses_sum = 0
@@ -229,6 +234,20 @@ model.best_testacc = 0
 #np.save('Losses.npy', np.array(losses))
 #np.save('Accuracies.npy', np.array(accs))
 #torch.save(model, f'Model_final.pth')
+def plotAUC(fpr,tpr, roc_auc):
+	plt.figure()
+	for i in range(3):
+		plt.plot(fpr[i], tpr[i], lw=4,
+		label='ROC curve of grade {0} (area = {1:0.2f})'
+		''.format(i+1, roc_auc[i]))
+	plt.plot([0, 1], [0, 1], 'k--', lw=4)
+	plt.xlim([0.0, 1.0])
+	plt.ylim([0.0, 1.05])
+	plt.xlabel('False Positive Rate')
+	plt.ylabel('True Positive Rate')
+	plt.title('Receiver Operating Characteristic Curve')
+	plt.legend(loc="lower right")
+	plt.savefig('ROCcurve.png', dpi = 220)
 
 def eval(): #evaluates test set 
 	with torch.no_grad():
@@ -240,8 +259,10 @@ def eval(): #evaluates test set
 		fpr = dict()
 		tpr = dict()
 		roc_auc = dict()
+		outs = torch.Tensor([]).to(device)
 		for q, batch in enumerate(batches, 1):
 			out = model(datatest[batch].to(device))
+			outs = torch.cat((out, outs), dim = 0)
 			loss = Loss(out, labeltest[batch].to(device))
 			_, pred = out.max(-1)
 			acc = pred.eq(labeltest[batch].view_as(pred)).float().mean().item()
@@ -249,11 +270,18 @@ def eval(): #evaluates test set
 			loss_sum += loss.item()*datatest[batch].size(0)
 			n_sum += datatest[batch].size(0)
 		for i in range(3): #3 = number of classes, grades 1, 2, and 3 
-			fpr[i], tpr[i], _ = roc_curve(labeltest[batch].to(device)[:, i], out[:, i])
+			#fpr[i], tpr[i], _ = roc_curve(labeltest.to(device), outs)
+			fpr[i], tpr[i], _ = roc_curve(label_binarize(labeltest.cpu().numpy(), classes=[0,1,2])[:,i], outs.cpu().numpy()[:,i])
 			roc_auc[i] = auc(fpr[i], tpr[i])
 	print(f'acc {acc_sum/n_sum:.3f}; loss {loss_sum/n_sum:.4f}')
 	print(f'AUC class 1 {roc_auc[0]}; AUC class 2 {roc_auc[1]}; AUC class 3 {roc_auc[2]}')
 	model.train()
+	if ((roc_auc[0]+roc_auc[1]+roc_auc[2])/3 > model.best_testauc):
+		model.best_testauc = (roc_auc[0]+roc_auc[1]+roc_auc[2])/3
+		model.accforbestauc = acc_sum/n_sum
+		plotAUC(fpr, tpr, roc_auc)
+		torch.save(model, f'BestModel.pth')
+		torch.save(optim, f'BestOptim.pth')
 	return loss_sum/n_sum, acc_sum/n_sum, roc_auc[0], roc_auc[1], roc_auc[2]
 
 for epoch in range(1, epochs+1):
@@ -261,6 +289,7 @@ for epoch in range(1, epochs+1):
 	losses_sum = 0
 	n_sum = 0
 	batches = torch.chunk(torch.randperm(len(datatrain)), 69) #100 batches 
+	model.epoch = epoch
 
 	for q, batch in enumerate(batches, 1):
 
@@ -288,10 +317,10 @@ for epoch in range(1, epochs+1):
 	auc3s.append(auc3)
 	accs.append(acc_sum/n_sum)
 	losses.append(losses_sum/n_sum)
-	if (testacc > model.best_testacc):
-		torch.save(model, f'BestModel.pth')
-		torch.save(optim, f'BestOptim.pth')
-		model.best_testacc = testacc
+	#if (testacc > model.best_testacc):
+	#	torch.save(model, f'BestModel.pth')
+	#	torch.save(optim, f'BestOptim.pth')
+	#	model.best_testacc = testacc
 np.save('TestAccs.npy', np.array(testaccs))
 np.save('TestLosses.npy', np.array(testlosses))
 np.save('AUC1.npy', np.array(auc1s))
