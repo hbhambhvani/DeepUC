@@ -261,7 +261,7 @@ def eval(): #evaluates test set
 		roc_auc = dict()
 		outs = torch.Tensor([]).to(device)
 		for q, batch in enumerate(batches, 1):
-			out = model(datatest[batch].to(device))
+			out = F.softmax(model(datatest[batch].to(device)), dim=-1)
 			outs = torch.cat((out, outs), dim = 0)
 			loss = Loss(out, labeltest[batch].to(device))
 			_, pred = out.max(-1)
