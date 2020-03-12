@@ -8,7 +8,7 @@ from torchvision import datasets, transforms
 import pdb
 from sklearn.metrics import roc_curve, auc
 
-epochs = 5
+epochs = 15
 K = 5
 
 #loading the data in, batch size = minibatch size
@@ -186,9 +186,8 @@ class Net(nn.Module):
 
 model = torch.hub.load('pytorch/vision:v0.5.0', 'resnext101_32x8d', pretrained=True).to(device)
 model.fc = nn.Linear(2048, 3)
-model.avgpool = nn.AdaptiveMaxPool2d((1,1))
 model = model.to(device)
-optim = torch.optim.Adam(model.parameters(), lr = 3e-4, weight_decay = 1e-4)
+optim = torch.optim.Adam(model.parameters(), lr = 3e-4, weight_decay = 1e-5)
 
 Loss = nn.CrossEntropyLoss()
 
@@ -288,28 +287,28 @@ def check(): #making sure AUC is evaluating right on the train set
 	with torch.no_grad():
 		model.eval() #turns off batch norm and dropout and any other training only regulizers etc
 		batches = torch.chunk(torch.randperm(len(datatrain)), 20) #100 batches
-		acc_sum = 0
-		loss_sum = 0
-		n_sum = 0
-		fpr = dict()
-		tpr = dict()
-		roc_auc = dict()
-		outs = torch.Tensor([]).to(device)
+		acc_sumtrain = 0
+		loss_sumtrain = 0
+		n_sumtrain = 0
+		fpr_train = dict()
+		tpr_train = dict()
+		roc_auc_train = dict()
+		outs_train = torch.Tensor([]).to(device)
 		for q, batch in enumerate(batches, 1):
 			out = F.softmax(model(datatrain[batch].to(device)), dim=-1)
-			outs = torch.cat((out, outs), dim = 0)
+			outs_train = torch.cat((out, outs_train), dim = 0)
 			loss = Loss(out, labeltrain[batch].to(device))
 			_, pred = out.max(-1)
 			acc = pred.eq(labeltrain[batch].view_as(pred)).float().mean().item()
-			acc_sum += acc*datatrain[batch].size(0)
-			loss_sum += loss.item()*datatrain[batch].size(0)
-			n_sum += datatrain[batch].size(0)
+			acc_sumtrain += acc*datatrain[batch].size(0)
+			loss_sumtrain += loss.item()*datatrain[batch].size(0)
+			n_sumtrain += datatrain[batch].size(0)
 		for i in range(3): #3 = number of classes, grades 1, 2, and 3 
 			#fpr[i], tpr[i], _ = roc_curve(labeltest.to(device), outs)
-			fpr[i], tpr[i], _ = roc_curve(label_binarize(labeltrain.cpu().numpy(), classes=[0,1,2])[:,i], outs.cpu().numpy()[:,i])
-			roc_auc[i] = auc(fpr[i], tpr[i])
-	print(f'acc {acc_sum/n_sum:.3f}; loss {loss_sum/n_sum:.4f}')
-	print(f'Train AUC class 1 {roc_auc[0]}; Train AUC class 2 {roc_auc[1]}; Train AUC class 3 {roc_auc[2]}')
+			fpr_train[i], tpr_train[i], _ = roc_curve(label_binarize(labeltrain.cpu().numpy(), classes=[0,1,2])[:,i], outs_train.cpu().numpy()[:,i])
+			roc_auc_train[i] = auc(fpr_train[i], tpr_train[i])
+	print(f'acc {acc_sumtrain/n_sumtrain:.3f}; loss {loss_sumtrain/n_sumtrain:.4f}')
+	print(f'Train AUC class 1 {roc_auc_train[0]}; Train AUC class 2 {roc_auc_train[1]}; Train AUC class 3 {roc_auc_train[2]}')
 
 for epoch in range(1, epochs+1):
 	acc_sum = 0
