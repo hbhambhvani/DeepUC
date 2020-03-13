@@ -309,6 +309,7 @@ def check(): #making sure AUC is evaluating right on the train set
 			roc_auc_train[i] = auc(fpr_train[i], tpr_train[i])
 	print(f'acc {acc_sumtrain/n_sumtrain:.3f}; loss {loss_sumtrain/n_sumtrain:.4f}')
 	print(f'Train AUC class 1 {roc_auc_train[0]}; Train AUC class 2 {roc_auc_train[1]}; Train AUC class 3 {roc_auc_train[2]}')
+	model.train()
 
 for epoch in range(1, epochs+1):
 	acc_sum = 0
