@@ -30,7 +30,7 @@ def plotAUC(fpr,tpr, roc_auc):
 		plt.plot(fpr[i], tpr[i], lw=4,
 		label='ROC curve of grade {0} (area = {1:0.2f})'
 		''.format(i+1, roc_auc[i]))
-	plt.plot([0, 1], [0, 1], 'k--', lw=4)
+	plt.plot([0, 1], [0, 1], 'k--', lw=1)
 	plt.xlim([0.0, 1.0])
 	plt.ylim([0.0, 1.05])
 	plt.xlabel('False Positive Rate')
