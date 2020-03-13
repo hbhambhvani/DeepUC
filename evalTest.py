@@ -27,7 +27,6 @@ def eval(): #evaluates test set
 	with torch.no_grad():
 		model.eval() #turns off batch norm and dropout and any other training only regulizers etc
 		acc_sum = 0
-		loss_sum = 0
 		n_sum = 0
 		fpr = dict()
 		tpr = dict()
@@ -39,17 +38,15 @@ def eval(): #evaluates test set
 			out = F.softmax(model(data), dim=-1)
 			outs = torch.cat((outs, out), dim = 0)
 			labels = torch.cat((labels, label), dim = 0)
-			loss = Loss(out, label)
 			_, pred = out.max(-1)
 			acc = pred.eq(label).float().mean().item()
 			acc_sum += acc*data.size(0)
-			loss_sum += loss.item()*data.size(0)
 			n_sum += data.size(0)
 		for i in range(3): #3 = number of classes, grades 1, 2, and 3 
 			#fpr[i], tpr[i], _ = roc_curve(labeltest.to(device), outs)
 			fpr[i], tpr[i], _ = roc_curve(label_binarize(labels.cpu().numpy(), classes=[0,1,2])[:,i], outs.cpu().numpy()[:,i])
 			roc_auc[i] = auc(fpr[i], tpr[i])
-	print(f'acc {acc_sum/n_sum:.3f}; loss {loss_sum/n_sum:.4f}')
+	print(f'acc {acc_sum/n_sum:.3f}')
 	print(f'AUC class 1 {roc_auc[0]}; AUC class 2 {roc_auc[1]}; AUC class 3 {roc_auc[2]}')
 	plotAUC(fpr, tpr, roc_auc)
 
