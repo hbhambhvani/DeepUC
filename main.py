@@ -272,6 +272,8 @@ for epoch in range(1, epochs+1):
 	for q, batch in enumerate(train_loader, 1):
 		data, label = batch[0].to(device), batch[1].to(device)
 
+		data += torch.randn(*data.shape).to(device)/256.
+
 		out = model(data)
 		loss = Loss(out, label)
 		optim.zero_grad() #makes all the grads zero to start with 
