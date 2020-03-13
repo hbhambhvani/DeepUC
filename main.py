@@ -264,12 +264,10 @@ def check(): #making sure AUC is evaluating right on the train set
 		for i in range(3): #3 = number of classes, grades 1, 2, and 3
 			fpr_train[i], tpr_train[i], _ = roc_curve(label_binarize(labels.cpu().numpy(), classes=[0,1,2])[:,i], outs_train.cpu().numpy()[:,i])
 			roc_auc_train[i] = auc(fpr_train[i], tpr_train[i])
-		trainaucs1.append(roc_auc_train[0])
-		trainaucs2.append(roc_auc_train[1])
-		trainaucs3.append(roc_auc_train[2])
 
 	print(f'Train AUC class 1 {roc_auc_train[0]}; Train AUC class 2 {roc_auc_train[1]}; Train AUC class 3 {roc_auc_train[2]}')
 	model.train()
+	return roc_auc_train
 
 for epoch in range(1, epochs+1):
 	acc_sum = 0
@@ -297,7 +295,10 @@ for epoch in range(1, epochs+1):
 
 		#print(data.shape, label)
 	testloss,testacc, auc1, auc2, auc3 = eval()
-	check()
+	roc_auc_train = check()
+	trainaucs1.append(roc_auc_train[0])
+	trainaucs2.append(roc_auc_train[1])
+	trainaucs3.append(roc_auc_train[2])
 	testlosses.append(testloss)
 	testaccs.append(testacc)
 	auc1s.append(auc1)
