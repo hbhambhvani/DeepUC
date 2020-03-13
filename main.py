@@ -208,7 +208,7 @@ def plotAUC(fpr,tpr, roc_auc):
 	plt.ylabel('True Positive Rate')
 	plt.title('Receiver Operating Characteristic Curve')
 	plt.legend(loc="lower right")
-	plt.savefig('ROCcurve.png', dpi = 220)
+	plt.savefig('valROCcurve.png', dpi = 220)
 
 def eval(): #evaluates test set 
 	with torch.no_grad():
