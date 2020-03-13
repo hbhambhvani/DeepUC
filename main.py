@@ -11,7 +11,7 @@ import torchvision
 import pdb
 from sklearn.metrics import roc_curve, auc
 
-epochs = 15
+epochs = 100
 K = 5
 
 #loading the data in, batch size = minibatch size
