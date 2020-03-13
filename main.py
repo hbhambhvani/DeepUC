@@ -190,6 +190,10 @@ auc3s = []
 model.best_testacc = 0
 model.best_testauc = 0
 model.accforbestauc = 0
+trainauc1s = []
+trainauc2s = []
+trainauc3s = []
+
 
 def plotAUC(fpr,tpr, roc_auc):
 	plt.figure()
@@ -260,6 +264,10 @@ def check(): #making sure AUC is evaluating right on the train set
 		for i in range(3): #3 = number of classes, grades 1, 2, and 3
 			fpr_train[i], tpr_train[i], _ = roc_curve(label_binarize(labels.cpu().numpy(), classes=[0,1,2])[:,i], outs_train.cpu().numpy()[:,i])
 			roc_auc_train[i] = auc(fpr_train[i], tpr_train[i])
+		trainaucs1.append(roc_auc_train[0])
+		trainaucs2.append(roc_auc_train[1])
+		trainaucs3.append(roc_auc_train[2])
+
 	print(f'Train AUC class 1 {roc_auc_train[0]}; Train AUC class 2 {roc_auc_train[1]}; Train AUC class 3 {roc_auc_train[2]}')
 	model.train()
 
@@ -303,9 +311,12 @@ for epoch in range(1, epochs+1):
 	#	model.best_testacc = testacc
 np.save('TestAccs.npy', np.array(testaccs))
 np.save('TestLosses.npy', np.array(testlosses))
-np.save('AUC1.npy', np.array(auc1s))
-np.save('AUC2.npy', np.array(auc2s))
-np.save('AUC3.npy', np.array(auc3s))
+np.save('testAUC1.npy', np.array(auc1s))
+np.save('testAUC2.npy', np.array(auc2s))
+np.save('testAUC3.npy', np.array(auc3s))
+np.save('trainAUC1.npy', np.array(trainauc1s))
+np.save('trainAUC2.npy', np.array(trainauc2s))
+np.save('trainAUC3.npy', np.array(trainauc3s))
 np.save('Losses.npy', np.array(losses))
 np.save('Accuracies.npy', np.array(accs))
 torch.save(model, f'Model_final.pth')
