@@ -203,14 +203,14 @@ def plotAUC(fpr,tpr, roc_auc):
 		''.format(i+1, roc_auc[i]))
 	plt.plot([0, 1], [0, 1], 'k--', lw=2)
 	plt.xlim([0.0, 1.0])
-	plt.ylim([0.0, 1.05])
+	plt.ylim([0.0, 1.0])
 	plt.xlabel('False Positive Rate')
 	plt.ylabel('True Positive Rate')
 	plt.title('Receiver Operating Characteristic Curve')
 	plt.legend(loc="lower right")
 	plt.savefig('valROCcurve.png', dpi = 220)
 
-def eval(): #evaluates test set 
+def eval(): #evaluates validation set 
 	with torch.no_grad():
 		model.eval() #turns off batch norm and dropout and any other training only regulizers etc
 		acc_sum = 0
