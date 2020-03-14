@@ -32,7 +32,7 @@ def plotAUC(fpr,tpr, roc_auc):
 		''.format(i+1, roc_auc[i]))
 	plt.plot([0, 1], [0, 1], 'k--', lw=2)
 	plt.xlim([0.0, 1.0])
-	plt.ylim([0.0, 1.05])
+	plt.ylim([0.0, 1.0])
 	plt.xlabel('False Positive Rate')
 	plt.ylabel('True Positive Rate')
 	plt.title('Receiver Operating Characteristic Curve')
@@ -64,6 +64,8 @@ def eval(): #evaluates test set
 			roc_auc[i] = auc(fpr[i], tpr[i])
 	print(f'acc {acc_sum/n_sum:.3f}')
 	print(f'AUC class 1 {roc_auc[0]}; AUC class 2 {roc_auc[1]}; AUC class 3 {roc_auc[2]}')
+	print(f'Epoch number {model.epoch()}')
+	print(f'Val acc {model.accforbestauc()}')
 	plotAUC(fpr, tpr, roc_auc)
 
 eval()
