@@ -64,8 +64,8 @@ def eval(): #evaluates test set
 			roc_auc[i] = auc(fpr[i], tpr[i])
 	print(f'acc {acc_sum/n_sum:.3f}')
 	print(f'AUC class 1 {roc_auc[0]}; AUC class 2 {roc_auc[1]}; AUC class 3 {roc_auc[2]}')
-	print(f'Epoch number {model.epoch()}')
-	print(f'Val acc {model.accforbestauc()}')
+	print(f'Epoch number {model.epoch}')
+	print(f'Val acc {model.accforbestauc}')
 	plotAUC(fpr, tpr, roc_auc)
 
 eval()
