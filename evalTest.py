@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import matplotlib
+import seaborn as sn
+import pandas as pd
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import label_binarize
@@ -11,7 +13,6 @@ import torchvision
 import pdb
 from sklearn.metrics import roc_curve, auc
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics._plot.confusion_matrix import ConfusionMatrixDisplay
 
 
 test_loader = torch.utils.data.DataLoader(
@@ -81,8 +82,14 @@ cm = confusion_matrix(labels.cpu().numpy(), preds.cpu().numpy(), labels = [0, 1,
 display_labels = ["MES 1", "MES 2", "MES 3"]
 #plot_confusion_matrix(cm, plot_labels, title = "Confusion Matrix")
 
-disp = ConfusionMatrixDisplay(confusion_matrix = cm, display_labels = display_labels)
+#disp = ConfusionMatrixDisplay(confusion_matrix = cm, display_labels = display_labels)
 
 
-
+plt.figure()
+df_cm = pd.DataFrame(cm, range(1,4), range(1,4))
+sn.heatmap(df_cm, annot=True, annot_kws={"size": 16}, cmap="YlGnBu")
+plt.xlabel = "Predicted MES"
+plt.ylabel = "True MES"
+plt.show()
+plt.savefig("ConfusionMatrix.png")
 
