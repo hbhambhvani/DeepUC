@@ -10,6 +10,7 @@ from torchvision import datasets, transforms
 import torchvision
 import pdb
 from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import confusion_matrix
 
 
 test_loader = torch.utils.data.DataLoader(
@@ -21,7 +22,9 @@ batch_size = 10, shuffle = False
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+
 model = torch.load('BestModel.pth')
+
 
 
 def plotAUC(fpr,tpr, roc_auc):
@@ -69,4 +72,15 @@ def eval(): #evaluates test set
 	plotAUC(fpr, tpr, roc_auc)
 
 eval()
+
+print(confusion_matrix(labels, pred, labels = ["1", "2", "3"]))
+
+
+
+
+
+
+
+
+
 
