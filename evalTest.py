@@ -52,12 +52,14 @@ def eval(): #evaluates test set
 		roc_auc = dict()
 		outs = torch.Tensor([]).to(device)
 		labels = torch.Tensor([]).long().to(device)
+		preds = torch.Tensor([]).to(device)
 		for q, batch in enumerate(test_loader, 1):
 			data, label = batch[0].to(device), batch[1].to(device)
 			out = F.softmax(model(data), dim=-1)
 			outs = torch.cat((outs, out), dim = 0)
 			labels = torch.cat((labels, label), dim = 0)
 			_, pred = out.max(-1)
+			preds = torch.cat((preds, ped), dim = 0)
 			acc = pred.eq(label).float().mean().item()
 			acc_sum += acc*data.size(0)
 			n_sum += data.size(0)
@@ -70,10 +72,12 @@ def eval(): #evaluates test set
 	print(f'Epoch number {model.epoch}')
 	print(f'Val acc {model.accforbestauc}')
 	plotAUC(fpr, tpr, roc_auc)
+	return labels, preds
 
-eval()
+labels, preds = eval()
+pdb.set_trace()
 
-print(confusion_matrix(labels, pred, labels = ["1", "2", "3"]))
+print(confusion_matrix(labels, preds, labels = ["1", "2", "3"]))
 
 
 
