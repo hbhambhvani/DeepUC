@@ -79,17 +79,16 @@ def eval(): #evaluates test set
 labels, preds = eval()
 
 cm = confusion_matrix(labels.cpu().numpy(), preds.cpu().numpy(), labels = [0, 1, 2])
-display_labels = ["MES 1", "MES 2", "MES 3"]
-#plot_confusion_matrix(cm, plot_labels, title = "Confusion Matrix")
+cm = cm.astype('float')/cm.sum(axis = 1)[:,np.newaxis]
 
-#disp = ConfusionMatrixDisplay(confusion_matrix = cm, display_labels = display_labels)
-
+#display_labels = ["MES 1", "MES 2", "MES 3"]
 
 plt.figure()
 df_cm = pd.DataFrame(cm, range(1,4), range(1,4))
-sn.heatmap(df_cm, annot=True, annot_kws={"size": 16}, cmap="YlGnBu")
-plt.xlabel = "Predicted MES"
-plt.ylabel = "True MES"
+sn.heatmap(df_cm, annot=True, annot_kws={"size": 14}, vmin = 0, vmax = 1, cmap="Blues")
+plt.xlabel("Predicted MES", fontsize = 14)
+plt.ylabel("True MES", fontsize = 14)
+plt.title("Confusion Matrix", fontsize = 14)
 plt.show()
 plt.savefig("ConfusionMatrix.png")
 
