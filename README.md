@@ -1,3 +1,3 @@
 # DeepUC
 
-This repo uses ResNext-based architectures on a publically available Ulcerative Colitis dataset to classify cancer severity.
+Utilizing a ResNext architecture to automate classifcation of endoscopic disease severity in patients with ulcerative colitis. 
